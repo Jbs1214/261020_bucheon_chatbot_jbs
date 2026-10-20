@@ -2,3 +2,4 @@ groq
 google-genai
 python-dotenv
 termcolor
+streamlit
