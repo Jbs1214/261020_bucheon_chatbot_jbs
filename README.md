@@ -12,7 +12,16 @@ Groq 한도가 소진되면 Gemini로 자동 전환됩니다.
 **Python 3.10 이상**이 필요합니다. (`python --version`으로 확인)
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+```
+
+`pip`만 쓰면 다른 버전의 Python에 설치될 수 있어서, 지금 쓰는 Python에 확실히 설치되도록 `python -m pip`를 권장합니다.
+
+Python 버전이 3.10보다 낮다면 새 환경을 만들어 쓰세요. (Anaconda 예시)
+```bash
+conda create -n chatbot python=3.11 -y
+conda activate chatbot
+python -m pip install -r requirements.txt
 ```
 
 | 라이브러리 | 용도 |
@@ -63,6 +72,9 @@ streamlit run app.py
 ```
 화면의 예시 재료 버튼을 누르거나, 아래 입력창에 재료를 적으면 됩니다. 왼쪽의 `새 대화 시작`으로 처음부터 다시 할 수 있습니다.
 
+> **참고: 배포된 웹사이트(URL)로 접속한 경우**
+> 접속한 사람의 키가 아니라 **웹사이트를 올린 사람의 API 키**가 사용됩니다. 그래서 여러 사람이 쓰면 올린 사람의 무료 한도가 함께 소진되고, 한도가 끝나면 잠시 답변이 되지 않을 수 있습니다. (Gemini 키가 있으면 자동으로 전환됩니다.) 내 키로 마음껏 쓰려면 위 방법대로 직접 실행하세요.
+
 **터미널로 실행**
 ```bash
 python 261020_bucheon_chatbot_jbs.py
@@ -76,4 +88,5 @@ python 261020_bucheon_chatbot_jbs.py
 | `The api_key client option must be set ...` | `.env` 파일이 없거나 `GROQ_API_KEY` 이름이 틀렸습니다. 파일 이름이 `.env`인지, 실행 위치가 프로젝트 폴더인지 확인하세요. |
 | `401 Invalid API Key` | 키를 잘못 붙여 넣었습니다. 앞뒤 공백, 따옴표, 안내 문구가 남아 있지 않은지 확인하세요. |
 | `Groq 한도가 소진됐고 GEMINI_API_KEY도 없습니다` | Groq 무료 한도가 끝났습니다. 잠시 후 다시 하거나 `.env`에 Gemini 키를 넣으세요. |
-| `No module named ...` | `pip install -r requirements.txt`를 다시 실행하세요. 여러 Python이 설치돼 있으면 `python -m pip install -r requirements.txt`를 쓰세요. |
+| `No matching distribution found for google-genai` | Python 버전이 3.10보다 낮습니다. `python --version`으로 확인하고, 위의 "새 환경 만들기"로 3.10 이상 환경을 만든 뒤 `python -m pip install -r requirements.txt`를 다시 실행하세요. 프롬프트에 `(환경이름)`이 떠 있어도 `pip`가 다른 Python을 가리킬 수 있으니 `python -m pip`를 쓰세요. |
+| `No module named ...` | `python -m pip install -r requirements.txt`를 다시 실행하세요. 설치한 Python과 실행하는 Python이 같은지도 확인하세요. |

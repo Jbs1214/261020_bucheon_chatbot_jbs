@@ -9,7 +9,7 @@ from termcolor import colored
 
 load_dotenv()
 
-GROQ_MODEL = "openai/gpt-oss-20b"
+GROQ_MODEL = "openai/gpt-oss-120b"
 GEMINI_MODEL = "gemini-3.5-flash"
 
 SYSTEM_PROMPT = """\
@@ -117,32 +117,39 @@ def ask(messages, max_tokens=800):
 
 def ask_stream(messages, max_tokens=800):
     """ask()와 같지만 답변을 글자 조각 단위로 흘려보낸다 (웹 화면용)."""
-    try:
-        stream = groq_create(
-            model=GROQ_MODEL,
-            messages=messages,
-            temperature=0.6,
-            max_completion_tokens=max_tokens,
-            reasoning_effort="low",
-            stream=True,
-        )
-    except groq.RateLimitError:
-        if gemini_client is None:
-            raise RuntimeError(
-                "Groq 한도가 소진됐고 GEMINI_API_KEY도 없습니다. .env를 확인하세요."
+    for attempt in range(4):
+        started = False
+        try:
+            stream = groq_create(
+                model=GROQ_MODEL,
+                messages=messages,
+                temperature=0.6,
+                max_completion_tokens=max_tokens,
+                reasoning_effort="low",
+                stream=True,
             )
-        print(colored("(Groq 한도 소진 → Gemini로 전환합니다)", "red"))
-        for chunk in gemini_client.models.generate_content_stream(
-            **gemini_args(messages, max_tokens)
-        ):
-            if chunk.text:
-                yield chunk.text
-        return
-
-    for chunk in stream:
-        text = chunk.choices[0].delta.content
-        if text:
-            yield text
+            for chunk in stream:
+                text = chunk.choices[0].delta.content
+                if text:
+                    started = True
+                    yield text
+            return
+        except groq.RateLimitError:
+            if gemini_client is None:
+                raise RuntimeError(
+                    "Groq 한도가 소진됐고 GEMINI_API_KEY도 없습니다. .env를 확인하세요."
+                )
+            print(colored("(Groq 한도 소진 → Gemini로 전환합니다)", "red"))
+            for chunk in gemini_client.models.generate_content_stream(
+                **gemini_args(messages, max_tokens)
+            ):
+                if chunk.text:
+                    yield chunk.text
+            return
+        except groq.APIError as e:
+            # 스트림 도중 tool_use_failed가 오면, 아직 글자가 안 나갔을 때만 처음부터 다시 한다
+            if started or "tool" not in str(e) or attempt == 3:
+                raise
 
 
 def main():
