@@ -1,4 +1,4 @@
-# 261020_bucheon_chatbot_jbs
+# 최강록 챗봇
 
 Groq API KEY를 활용하여 챗봇 만들기
 
